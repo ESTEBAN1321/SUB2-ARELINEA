@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aerolínea XYZ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            position: relative;
+        }
+        header img {
+            width: 100px;
+            height: auto;
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        header h1 {
+            display: inline-block;
+            margin: 0;
+            padding-left: 120px; /* Espacio para el logo */
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #004080;
+        }
+        nav a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            text-align: center;
+        }
+        nav a:hover {
+            background-color: #003366;
+        }
+        .container {
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #003366;
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #004080;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #003366;
+        }
+        .reservas {
+            margin-top: 20px;
+        }
+        .reserva-item {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .reserva-item button {
+            background-color: #cc0000;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .reserva-item select {
+            margin-top: 10px;
+        }
+        footer {
+            background-color: #003366;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const defaultOrigin = 'Madrid';
+            const defaultDestination = 'Barcelona';
+            document.getElementById('origen').value = defaultOrigin;
+            document.getElementById('destino').value = defaultDestination;
+
+            function loadReservas() {
+                const reservasContainer = document.querySelector('.reservas');
+                const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+                reservasContainer.innerHTML = '';
+                reservas.forEach((reserva, index) => {
+                    const div = document.createElement('div');
+                    div.classList.add('reserva-item');
+                    div.innerHTML = `
+                        <p><strong>Origen:</strong> ${reserva.origen}</p>
+                        <p><strong>Destino:</strong> ${reserva.destino}</p>
+                        <p><strong>Fecha:</strong> ${reserva.fecha}</p>
+                        <p><strong>Clase:</strong> ${reserva.clase}</p>
+                        <p><strong>Precio:</strong> ${reserva.precio}</p>
+                        <p><strong>Estado:</strong> 
+                            <select class="estado" data-index="${index}">
+                                <option value="Próximo a salir" ${reserva.estado === 'Próximo a salir' ? 'selected' : ''}>Próximo a salir</option>
+                                <option value="En vuelo" ${reserva.estado === 'En vuelo' ? 'selected' : ''}>En vuelo</option>
+                                <option value="Finalizado" ${reserva.estado === 'Finalizado' ? 'selected' : ''}>Finalizado</option>
+                            </select>
+                        </p>
+                        <button data-index="${index}">Eliminar</button>
+                    `;
+                    reservasContainer.appendChild(div);
+                });
+                document.querySelectorAll('.estado').forEach(select => {
+                    select.addEventListener('change', function () {
+                        const index = this.getAttribute('data-index');
+                        const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+                        reservas[index].estado = this.value;
+                        localStorage.setItem('reservas', JSON.stringify(reservas));
+                        loadReservas();
+                    });
+                });
+                document.querySelectorAll('.reserva-item button').forEach(button => {
+                    button.addEventListener('click', function () {
+                        const index = this.getAttribute('data-index');
+                        const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+                        reservas.splice(index, 1);
+                        localStorage.setItem('reservas', JSON.stringify(reservas));
+                        loadReservas();
+                    });
+                });
+            }
+
+            document.querySelector('#reserva form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                const reservas = JSON.parse(localStorage.getItem('reservas')) || [];
+                const nuevaReserva = {
+                    origen: document.getElementById('origen').value,
+                    destino: document.getElementById('destino').value,
+                    fecha: document.getElementById('fecha').value,
+                    clase: document.getElementById('clase').value,
+                    precio: document.getElementById('precio').value,
+                    estado: 'Próximo a salir'
+                };
+                reservas.push(nuevaReserva);
+                localStorage.setItem('reservas', JSON.stringify(reservas));
+                alert('Datos de la aerolínea guardados: ' + JSON.stringify(nuevaReserva));
+                loadReservas();
+            });
+
+            loadReservas();
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <img src="banner.jpg" alt="Banner de la Aerolínea">
+        <h1>Aerolínea XYZ</h1>
+    </header>
+    <nav>
+        <a href="#reserva">Reserva de Vuelos</a>
+        <a href="#estado">Estado del Vuelo</a>
+        <a href="#contacto">Información de Contacto</a>
+        <a href="#reservas">Vuelos Reservados</a>
+    </nav>
+    <div class="container" id="reserva">
+        <h2>Reserva de Vuelos</h2>
+        <form>
+            <label for="origen">Origen:</label>
+            <input type="text" id="origen" name="origen" required>
+
+            <label for="destino">Destino:</label>
+            <input type="text" id="destino" name="destino" required>
+
+            <label for="fecha">Fecha de Vuelo:</label>
+            <input type="date" id="fecha" name="fecha" required>
+
+            <label for="clase">Clase:</label>
+            <select id="clase" name="clase" required>
+                <option value="economica">Económica</option>
+                <option value="negocios">Negocios</option>
+                <option value="primera">Primera Clase</option>
+            </select>
+
+            <label for="precio">Precio:</label>
+            <input type="text" id="precio" name="precio" required>
+
+            <input type="submit" value="Buscar Vuelos">
+        </form>
+    </div>
+    <div class="container" id="estado">
+        <h2>Estado del Vuelo</h2>
+        <form>
+            <label for="numero-vuelo">Número de Vuelo:</label>
+            <input type="text" id="numero-vuelo" name="numero-vuelo" required>
+
+            <input type="submit" value="Consultar Estado">
+        </form>
+    </div>
+    <div class="container" id="contacto">
+        <h2>Información de Contacto</h2>
+        <p>Teléfono: 123-456-7890</p>
+        <p>Email: contacto@aerolineaxyz.com</p>
+        <p>Dirección: Calle Falsa 123, Ciudad, País</p>
+    </div>
+    <div class="container" id="reservas">
+        <h2>Vuelos Reservados</h2>
+        <div class="reservas"></div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Aerolínea XYZ. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
